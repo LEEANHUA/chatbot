@@ -18,3 +18,13 @@ class ChatGPT:
     
     def set_assistant_utterance(self, assistant_uttrance) -> None:
         self.dialogue_history.append({"role": "assistant", "content": assistant_uttrance})
+    
+    def append_assistant_utterance(self, word) -> None:
+        if self.dialogue_history[-1]["role"] == "user":
+            self.dialogue_history.append({"role": "assistant", "content": word})
+        else:
+            self.dialogue_history[-1]["content"] += word
+        
+    # 対話履歴チェック用
+    def get_dialogue_history(self) -> list:
+        return self.dialogue_history

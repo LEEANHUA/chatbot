@@ -23,7 +23,24 @@ def chat(valid_stream):
             
             wav_data = voicevox.get_audio_file_from_text(assistant_response)
             audio_play(wav_data)
+        else:
+            assistant_utt = ""
+            for chunk in llm_reault:
+                word = chunk.choices[0].delta.content
+                if word == None:
+                    break
+                assistant_utt += word
+                for punctuation in ["。", "！", "？", "、"]:
+                    if punctuation in word:
+                        print(assistant_utt)
+                        wav_data = voicevox.get_audio_file_from_text(assistant_utt)
+                        audio_play(wav_data)
+                        assistant_utt = ""
+            if assistant_utt != "":
+                print(assistant_utt)
+                wav_data = voicevox.get_audio_file_from_text(assistant_utt)
+                audio_play(wav_data)
 
 if __name__ == "__main__":
-    valid_stream = False
+    valid_stream = True
     chat(valid_stream)

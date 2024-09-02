@@ -13,15 +13,15 @@ def audio_play(wav_data):
 def chat(valid_stream):
     llm = chatgpt.ChatGPT(valid_stream)
     while True:
-        user_q = input("文章を入力：")
+        user_utt = input("文章を入力：")
         
-        llm_reault = llm.run_completion(user_q)
+        llm_reault = llm.run_completion(user_utt)
         if valid_stream == False:
-            assistant_response = llm_reault.choices[0].message.content
-            print(assistant_response)
-            llm.set_assistant_utterance(assistant_response)
+            assistant_utt = llm_reault.choices[0].message.content
+            print(assistant_utt)
+            llm.set_assistant_utterance(assistant_utt)
             
-            wav_data = voicevox.get_audio_file_from_text(assistant_response)
+            wav_data = voicevox.get_audio_file_from_text(assistant_utt)
             audio_play(wav_data)
         else:
             assistant_utt = ""

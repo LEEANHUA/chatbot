@@ -32,6 +32,7 @@ def chat(valid_stream):
         llm_reault = llm.run_completion(user_utt)
         
         result_queue = Queue()
+        # Executorオブジェクトを作成
         with ThreadPoolExecutor() as executor:
             futures = []
             tmp_utt = ""
@@ -44,6 +45,8 @@ def chat(valid_stream):
                     if punctuation in word:
                         print(tmp_utt)
                         llm.append_assistant_utterance(tmp_utt)
+                        # Executorオブジェクトにタスクをsubmitする
+                        # submitした瞬間にスレッドが生成され、非同期で実行が開始される
                         future = executor.submit(tts_and_save, tmp_utt, len(futures), result_queue)
                         futures.append(future)
                         tmp_utt = ""
@@ -54,6 +57,7 @@ def chat(valid_stream):
                 futures.append(future)
             
             # 音声合成が完了したものから再生する
+            # ただし、順番通りに再生するため、indexを使って順番を制御する
             def play_audio():
                 count = 0
                 while True:
@@ -68,7 +72,7 @@ def chat(valid_stream):
                         result_queue.put((index, wav_data))
                     if result_queue.empty():
                         play_end_time = time.time()
-                        print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
+                        print(color_dic["yellow"] + f"再生開始から終了まで: {play_end_time - play_start_time:.2f}秒" + color_dic["end"])
                         break
 
             play_thread = executor.submit(play_audio)

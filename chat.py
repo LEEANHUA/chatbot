@@ -35,7 +35,7 @@ def chat(valid_stream):
             
             audio_play(wav_data)
             play_end_time = time.time()
-            print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
+            print(color_dic["yellow"] + f"再生開始から終了まで: {play_end_time - play_start_time:.2f}秒" + color_dic["end"])
         else:
             tmp_utt = ""
             first_tts = True   # 時間計測用の変数
@@ -66,8 +66,8 @@ def chat(valid_stream):
             # 時間の計測結果を表示
             print(color_dic["yellow"] + f"入力から音声が流れるまで: {play_start_time - start_time:.2f}秒" + color_dic["end"])
             play_end_time = time.time()
-            print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
+            print(color_dic["yellow"] + f"再生開始から終了まで: {play_end_time - play_start_time:.2f}秒" + color_dic["end"])
 
 if __name__ == "__main__":
-    valid_stream = True
+    valid_stream = False
     chat(valid_stream)

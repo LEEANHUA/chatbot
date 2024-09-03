@@ -30,6 +30,8 @@ def chat(valid_stream):
             print(f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒")
             
             audio_play(wav_data)
+            end_time = time.time()
+            print(f"入力から音声終了まで: {end_time - start_time:.2f}秒")
         else:
             tmp_utt = ""
             first_tts = True   # 時間計測用の変数
@@ -58,6 +60,8 @@ def chat(valid_stream):
                     first_tts = False
                 audio_play(wav_data)
             print(f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒")
+            end_time = time.time()
+            print(f"入力から音声終了まで: {end_time - start_time:.2f}秒")
 
 if __name__ == "__main__":
     valid_stream = True

@@ -1,5 +1,5 @@
 import time
-import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
 from pydub import AudioSegment
 from pydub.playback import play
@@ -15,36 +15,13 @@ def audio_play(wav_data):
     audio = AudioSegment.from_wav("audio/tmp.wav")
     play(audio)
 
-def tts_worker(tts_queue, play_start_time, play_end_time):
-    while True:
-        assistant_utt = tts_queue.get()
-        if assistant_utt == None:
-            tts_queue.task_done()
-            break
-        wav_data = voicevox.get_audio_file_from_text(assistant_utt)
-        
-        # 最初の音声再生までの時間を記録
-        if play_start_time[0] is None:
-            play_start_time[0] = time.time()
-        
-        audio_play(wav_data)
-        
-        # 最後の音声再生が終了した時刻を記録
-        play_end_time[0] = time.time()
-        
-        tts_queue.task_done()
+def tts_and_save(text, index, result_queue):
+    wav_data = voicevox.get_audio_file_from_text(text)
+    print(color_dic["blue"] + f"TTS完了: {text}" + color_dic["end"])
+    result_queue.put((index, wav_data))
 
 def chat(valid_stream):
     llm = chatgpt.ChatGPT(valid_stream)
-    tts_queue = Queue()
-    
-    # タイマー用変数（リストを使用して変更可能にする）
-    play_start_time = [None]
-    play_end_time = [None]
-    
-    # TTSを処理するスレッドを作成
-    tts_thread = threading.Thread(target=tts_worker, args=(tts_queue, play_start_time, play_end_time))
-    tts_thread.start()
     
     while True:
         user_utt = input(color_dic["green"] + "文章を入力：" + color_dic["end"])
@@ -53,13 +30,10 @@ def chat(valid_stream):
         start_time = time.time()
         
         llm_reault = llm.run_completion(user_utt)
-        if valid_stream == False:
-            assistant_utt = llm_reault.choices[0].message.content
-            print(assistant_utt)
-            llm.set_assistant_utterance(assistant_utt)
-            
-            tts_queue.put(assistant_utt)
-        else:
+        
+        result_queue = Queue()
+        with ThreadPoolExecutor() as executor:
+            futures = []
             tmp_utt = ""
             for chunk in llm_reault:
                 word = chunk.choices[0].delta.content
@@ -70,23 +44,37 @@ def chat(valid_stream):
                     if punctuation in word:
                         print(tmp_utt)
                         llm.append_assistant_utterance(tmp_utt)
-                        tts_queue.put(tmp_utt)
+                        future = executor.submit(tts_and_save, tmp_utt, len(futures), result_queue)
+                        futures.append(future)
                         tmp_utt = ""
             if tmp_utt != "":
                 print(tmp_utt)
                 llm.append_assistant_utterance(tmp_utt)
-                tts_queue.put(tmp_utt)
-        
-        tts_queue.join()    # TTSの処理が終了するまで待機
-        
-        # 時間の計測結果を表示
-        if play_start_time[0] is not None:
-            print(color_dic["yellow"] + f"入力から音声が流れるまで: {play_start_time[0] - start_time:.2f}秒" + color_dic["end"])
-        if play_end_time[0] is not None:
-            print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time[0] - start_time:.2f}秒" + color_dic["end"])
+                future = executor.submit(tts_and_save, tmp_utt, len(futures), result_queue)
+                futures.append(future)
             
-    tts_queue.put(None) # tts_workerを終了させるためにNoneを送る
-    tts_thread.join()   # スレッドが終了するまで待機
+            # 音声合成が完了したものから再生する
+            def play_audio():
+                count = 0
+                while True:
+                    index, wav_data = result_queue.get()
+                    if index == count:
+                        if index == 0:
+                            play_start_time = time.time()
+                            print(color_dic["yellow"] + f"入力から音声が流れるまで: {play_start_time - start_time:.2f}秒" + color_dic["end"])
+                        audio_play(wav_data)
+                        count += 1
+                    else:
+                        result_queue.put((index, wav_data))
+                    if result_queue.empty():
+                        play_end_time = time.time()
+                        print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
+                        break
+
+            play_thread = executor.submit(play_audio)
+            for future in as_completed(futures):
+                future.result()  # TTSの各スレッドが完了するまで待機
+            play_thread.result()  # 再生スレッドが完了するまで待機
 
 if __name__ == "__main__":
     valid_stream = True

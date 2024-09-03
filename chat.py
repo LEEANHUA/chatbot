@@ -5,6 +5,8 @@ from pydub.playback import play
 from llm import chatgpt
 from tts import voicevox
 
+color_dic = {"black":"\033[30m", "red":"\033[31m", "green":"\033[32m", "yellow":"\033[33m", "blue":"\033[34m", "end":"\033[0m"}
+
 def audio_play(wav_data):
     with open("audio/tmp.wav", mode='bw') as f:
         f.write(wav_data)
@@ -14,7 +16,7 @@ def audio_play(wav_data):
 def chat(valid_stream):
     llm = chatgpt.ChatGPT(valid_stream)
     while True:
-        user_utt = input("文章を入力：")
+        user_utt = input(color_dic["green"] + "文章を入力：" + color_dic["end"])
         start_time = time.time()
         
         llm_reault = llm.run_completion(user_utt)
@@ -27,11 +29,11 @@ def chat(valid_stream):
             
             # 時間計測
             tts_end_time = time.time()
-            print(f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒")
+            print(color_dic["yellow"] + f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒" + color_dic["end"])
             
             audio_play(wav_data)
             end_time = time.time()
-            print(f"入力から音声終了まで: {end_time - start_time:.2f}秒")
+            print(color_dic["yellow"] + f"入力から音声終了まで: {end_time - start_time:.2f}秒" + color_dic["end"])
         else:
             tmp_utt = ""
             first_tts = True   # 時間計測用の変数
@@ -59,9 +61,9 @@ def chat(valid_stream):
                     tts_end_time = time.time()
                     first_tts = False
                 audio_play(wav_data)
-            print(f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒")
+            print(color_dic["yellow"] + f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒" + color_dic["end"])
             end_time = time.time()
-            print(f"入力から音声終了まで: {end_time - start_time:.2f}秒")
+            print(color_dic["yellow"] + f"入力から音声終了まで: {end_time - start_time:.2f}秒" + color_dic["end"])
 
 if __name__ == "__main__":
     valid_stream = True

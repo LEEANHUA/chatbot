@@ -30,12 +30,12 @@ def chat(valid_stream):
             wav_data = voicevox.get_audio_file_from_text(assistant_utt)
             
             # 時間計測
-            tts_end_time = time.time()
-            print(color_dic["yellow"] + f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒" + color_dic["end"])
+            play_start_time = time.time()
+            print(color_dic["yellow"] + f"入力から音声が流れるまで: {play_start_time - start_time:.2f}秒" + color_dic["end"])
             
             audio_play(wav_data)
-            end_time = time.time()
-            print(color_dic["yellow"] + f"入力から音声終了まで: {end_time - start_time:.2f}秒" + color_dic["end"])
+            play_end_time = time.time()
+            print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
         else:
             tmp_utt = ""
             first_tts = True   # 時間計測用の変数
@@ -51,7 +51,7 @@ def chat(valid_stream):
                         wav_data = voicevox.get_audio_file_from_text(tmp_utt)
                         # 最初のTTSなら入力からかかった時間を計測
                         if first_tts:
-                            tts_end_time = time.time()
+                            play_start_time = time.time()
                             first_tts = False
                         audio_play(wav_data)
                         tmp_utt = ""
@@ -60,12 +60,13 @@ def chat(valid_stream):
                 llm.append_assistant_utterance(tmp_utt)
                 wav_data = voicevox.get_audio_file_from_text(tmp_utt)
                 if first_tts:
-                    tts_end_time = time.time()
+                    play_start_time = time.time()
                     first_tts = False
                 audio_play(wav_data)
-            print(color_dic["yellow"] + f"入力から音声が流れるまで: {tts_end_time - start_time:.2f}秒" + color_dic["end"])
-            end_time = time.time()
-            print(color_dic["yellow"] + f"入力から音声終了まで: {end_time - start_time:.2f}秒" + color_dic["end"])
+            # 時間の計測結果を表示
+            print(color_dic["yellow"] + f"入力から音声が流れるまで: {play_start_time - start_time:.2f}秒" + color_dic["end"])
+            play_end_time = time.time()
+            print(color_dic["yellow"] + f"入力から音声終了まで: {play_end_time - start_time:.2f}秒" + color_dic["end"])
 
 if __name__ == "__main__":
     valid_stream = True

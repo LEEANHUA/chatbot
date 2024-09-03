@@ -17,6 +17,8 @@ def chat(valid_stream):
     llm = chatgpt.ChatGPT(valid_stream)
     while True:
         user_utt = input(color_dic["green"] + "文章を入力：" + color_dic["end"])
+        if user_utt.lower() == "q":
+            break
         start_time = time.time()
         
         llm_reault = llm.run_completion(user_utt)

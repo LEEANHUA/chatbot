@@ -1,9 +1,8 @@
 from openai import OpenAI
-from .constants import Constants
 
 class ChatGPT:
     def __init__(self, valid_stream) -> None:
-        self.client = OpenAI(api_key=Constants.OPENAI_API_KEY)
+        self.client = OpenAI()
         self.dialogue_history = []
         self.valid_stream = valid_stream
         

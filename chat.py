@@ -76,5 +76,5 @@ def chat(valid_stream, valid_voice_input):
 
 if __name__ == "__main__":
     valid_stream = False
-    valid_voice_input = False
+    valid_voice_input = True
     chat(valid_stream, valid_voice_input)

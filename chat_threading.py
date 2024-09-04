@@ -4,6 +4,7 @@ from queue import Queue
 from pydub import AudioSegment
 from pydub.playback import play
 
+from stt import whisper
 from llm import chatgpt
 from tts import voicevox
 
@@ -20,13 +21,18 @@ def tts_and_save(text, index, result_queue):
     print(color_dic["blue"] + f"TTS完了: {text}" + color_dic["end"])
     result_queue.put((index, wav_data))
 
-def chat(valid_stream):
+def chat(valid_stream, valid_voice_input):
+    stt = whisper.WhisperAPI()
     llm = chatgpt.ChatGPT(valid_stream)
     
     while True:
-        user_utt = input(color_dic["green"] + "文章を入力：" + color_dic["end"])
-        if user_utt.lower() == "q":
-            break
+        if valid_voice_input:
+            user_utt = stt.voice_to_text()
+            print(color_dic["green"] + "あなた: " + color_dic["end"] + user_utt)
+        else:
+            user_utt = input(color_dic["green"] + "文章を入力：" + color_dic["end"])
+            if user_utt.lower() == "q":
+                break
         start_time = time.time()
         
         llm_reault = llm.run_completion(user_utt)
@@ -82,4 +88,5 @@ def chat(valid_stream):
 
 if __name__ == "__main__":
     valid_stream = True
-    chat(valid_stream)
+    valid_voice_input = True
+    chat(valid_stream, valid_voice_input)
